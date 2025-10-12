@@ -158,21 +158,24 @@ class ShedulePage extends StatelessWidget {
 
               // 3️⃣ Линия текущего времени
               Positioned(
-                top: currentTop - 1,
-                left: 0,
+                top: currentTop - 9,
+                left: -5,
                 right: 0,
                 child: Row(
                   children: [
                     const SizedBox(width: 4),
-                    const Icon(
-                      Icons.circle,
-                      size: 10,
-                      color: Colors.blueAccent,
+                    SvgPicture.asset(
+                      'assets/icons/Polygon.svg',
+                      width: 15,
+                      colorFilter: ColorFilter.mode(
+                        Colors.blueAccent,
+                        BlendMode.srcATop,
+                      ),
                     ),
                     Container(
                       height: 2,
                       color: Colors.blueAccent,
-                      width: MediaQuery.of(context).size.width - 16,
+                      width: MediaQuery.of(context).size.width - 15,
                     ),
                   ],
                 ),
