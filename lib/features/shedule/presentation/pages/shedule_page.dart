@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:shedule_test/features/shedule/domain/entity/task.dart';
 
 class ShedulePage extends StatelessWidget {
   const ShedulePage({super.key});
@@ -182,20 +183,4 @@ class ShedulePage extends StatelessWidget {
       ),
     );
   }
-}
-
-class Task {
-  final String title;
-  final String project;
-  final TimeOfDay start;
-  final TimeOfDay end;
-  final Color color;
-
-  Task({
-    required this.title,
-    required this.project,
-    required this.start,
-    required this.end,
-    required this.color,
-  });
 }
