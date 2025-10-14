@@ -28,152 +28,198 @@ class ShedulePage extends StatelessWidget {
     final currentTop = timeToPixels(now, hourHeight);
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: SingleChildScrollView(
-        child: SizedBox(
-          height: 10 * hourHeight, // высота для всех часов
-          child: BlocConsumer<SheduleBloc, SheduleState>(
-            listener: (context, state) {},
-            builder: (context, state) {
-              print(state);
-              return state is SheduleLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : state is SheduleSuccess
-                  ? Stack(
-                      children: [
-                        // 1 Фон с часами
-                        Column(
-                          children: List.generate(10, (index) {
-                            final label = DateFormat(
-                              'H:mm',
-                            ).format(DateTime(0, 0, 0, index + 7));
-                            return SizedBox(
-                              height: hourHeight,
-                              child: Stack(
-                                children: [
-                                  // Линия
-                                  Positioned(
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    child: Container(
-                                      height: 1,
-                                      color: Color(0xFFDFDFDF),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top:
-                                        hourHeight / 2 -
-                                        8, // центрируем текст относительно часа
-                                    left: 25,
-                                    child: Text(
-                                      label,
-                                      style: TextStyle(
-                                        color: Color(0xFF7B7B7B),
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }),
-                        ),
-
-                        // 2️⃣ Карточки задач
-                        ...state.shedule.map((task) {
-                          final index = state.shedule.indexOf(task);
-                          final start = parseTime(task.startTime);
-                          final end = parseTime(task.endTime);
-
-                          final top = timeToPixels(start, hourHeight);
-                          final bottom = timeToPixels(end, hourHeight);
-                          final height = bottom - top;
-
-                          return Positioned(
-                            top: top,
-                            left: 80,
-                            right: 20,
-                            child: Container(
-                              height: height,
-                              decoration: BoxDecoration(
-                                color: taskColors[index % taskColors.length],
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    task.subjectName,
-                                    maxLines: 1,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  Text(
-                                    task.teacherName ?? '',
-                                    maxLines: 1,
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-
-                                  const Spacer(),
-                                  Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/icons/clock.svg',
-                                      ),
-                                      SizedBox(width: 6),
-                                      Text(
-                                        '${formatTime24(start)} - ${formatTime24(end)}',
-                                        style: const TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-
-                        // 3️⃣ Линия текущего времени
-                        Positioned(
-                          top: currentTop - 9,
-                          left: -5,
-                          right: 0,
-                          child: Row(
+      backgroundColor: Color(0xFFEBEBEB),
+      body: Column(
+        children: [
+          Container(
+            height: 172,
+            width: MediaQuery.of(context).size.width,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadiusGeometry.vertical(
+                top: Radius.circular(30),
+                bottom: Radius.circular(30),
+              ),
+              border: BoxBorder.fromLTRB(
+                top: BorderSide(color: Colors.black, width: 2),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsetsGeometry.fromLTRB(18, 36, 0, 0),
+                  child: Text(
+                    '30 Июля, 2024',
+                    style: TextStyle(
+                      color: Color(0xFF131313),
+                      fontSize: 25,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                // DatePicker
+              ],
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: SizedBox(
+                height: 10 * hourHeight, // высота для всех часов
+                child: BlocConsumer<SheduleBloc, SheduleState>(
+                  listener: (context, state) {},
+                  builder: (context, state) {
+                    print(state);
+                    return state is SheduleLoading
+                        ? Center(child: CircularProgressIndicator())
+                        : state is SheduleSuccess
+                        ? Stack(
                             children: [
-                              const SizedBox(width: 4),
-                              SvgPicture.asset(
-                                'assets/icons/Polygon.svg',
-                                width: 15,
-                                colorFilter: ColorFilter.mode(
-                                  Colors.blueAccent,
-                                  BlendMode.srcATop,
+                              // 1 Фон с часами
+                              Column(
+                                children: List.generate(10, (index) {
+                                  final label = DateFormat(
+                                    'H:mm',
+                                  ).format(DateTime(0, 0, 0, index + 7));
+                                  return SizedBox(
+                                    height: hourHeight,
+                                    child: Stack(
+                                      children: [
+                                        // Линия
+                                        Positioned(
+                                          top: 0,
+                                          left: 0,
+                                          right: 0,
+                                          child: Container(
+                                            height: 1,
+                                            color: Color.fromARGB(
+                                              255,
+                                              175,
+                                              175,
+                                              175,
+                                            ),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top:
+                                              hourHeight / 2 -
+                                              8, // центрируем текст относительно часа
+                                          left: 25,
+                                          child: Text(
+                                            label,
+                                            style: TextStyle(
+                                              color: Color(0xFF7B7B7B),
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                              ),
+
+                              // 2️⃣ Карточки задач
+                              ...state.shedule.map((task) {
+                                final index = state.shedule.indexOf(task);
+                                final start = parseTime(task.startTime);
+                                final end = parseTime(task.endTime);
+
+                                final top = timeToPixels(start, hourHeight);
+                                final bottom = timeToPixels(end, hourHeight);
+                                final height = bottom - top;
+
+                                return Positioned(
+                                  top: top,
+                                  left: 80,
+                                  right: 20,
+                                  child: Container(
+                                    height: height,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          taskColors[index % taskColors.length],
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          task.subjectName,
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        Text(
+                                          task.teacherName ?? '',
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+
+                                        const Spacer(),
+                                        Row(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/icons/clock.svg',
+                                            ),
+                                            SizedBox(width: 6),
+                                            Text(
+                                              '${formatTime24(start)} - ${formatTime24(end)}',
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }),
+
+                              // 3️⃣ Линия текущего времени
+                              Positioned(
+                                top: currentTop - 9,
+                                left: -5,
+                                right: 0,
+                                child: Row(
+                                  children: [
+                                    const SizedBox(width: 4),
+                                    SvgPicture.asset(
+                                      'assets/icons/Polygon.svg',
+                                      width: 15,
+                                      colorFilter: ColorFilter.mode(
+                                        Colors.blueAccent,
+                                        BlendMode.srcATop,
+                                      ),
+                                    ),
+                                    Container(
+                                      height: 2,
+                                      color: Colors.blueAccent,
+                                      width:
+                                          MediaQuery.of(context).size.width -
+                                          15,
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Container(
-                                height: 2,
-                                color: Colors.blueAccent,
-                                width: MediaQuery.of(context).size.width - 15,
-                              ),
                             ],
-                          ),
-                        ),
-                      ],
-                    )
-                  : SizedBox();
-            },
+                          )
+                        : SizedBox();
+                  },
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
