@@ -1,3 +1,4 @@
 # shedule_test
 
-A new Flutter project.
+### 🕓 Открыть приложение (Веб версия)
+[Открыть расписание](https://denup.github.io/shedule/)
