@@ -9,11 +9,11 @@ class SheduleRepositoryImpl implements SheduleRepository {
   @override
   Future<List<Shedule>> getShedule({
     required String groupName,
-    required int dayOfWeek,
+    required DateTime selectedDate,
   }) async {
-    final result = remoteDataSource.getShedule(
+    final result = await remoteDataSource.getShedule(
       groupName: groupName,
-      dayOfWeek: dayOfWeek,
+      selectedDate: selectedDate,
     );
     return result;
   }

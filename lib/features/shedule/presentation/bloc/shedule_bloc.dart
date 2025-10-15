@@ -9,7 +9,6 @@ part 'shedule_state.dart';
 class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
   final SheduleRepository repository;
   SheduleBloc({required this.repository}) : super(SheduleInitial()) {
-    on<SheduleEvent>((event, emit) {});
     on<SheduleLoadEvent>(_onLoading);
   }
 
@@ -17,14 +16,18 @@ class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
     SheduleLoadEvent event,
     Emitter<SheduleState> emit,
   ) async {
+    print('📦 _onLoading вызван с датой ${event.selectedDate}');
     try {
       emit(SheduleLoading());
+
       final response = await repository.getShedule(
         groupName: event.groupName,
-        dayOfWeek: event.dayOfWeek,
+        selectedDate: event.selectedDate,
       );
+      print('✅ Получено ${response.length} записей');
       emit(SheduleSuccess(shedule: response));
     } catch (e) {
+      print('❌ Ошибка в _onLoading: $e');
       emit(SheduleError(errorMessage: e.toString()));
     }
   }

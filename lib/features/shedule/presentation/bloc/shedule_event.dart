@@ -9,10 +9,10 @@ sealed class SheduleEvent extends Equatable {
 
 final class SheduleLoadEvent extends SheduleEvent {
   final String groupName;
-  final int dayOfWeek;
+  final DateTime selectedDate;
 
-  const SheduleLoadEvent({required this.groupName, required this.dayOfWeek});
+  const SheduleLoadEvent({required this.groupName, required this.selectedDate});
 
   @override
-  List<Object> get props => [groupName, dayOfWeek];
+  List<Object> get props => [groupName, selectedDate];
 }
