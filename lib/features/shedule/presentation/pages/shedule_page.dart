@@ -200,9 +200,18 @@ class _ShedulePageState extends State<ShedulePage> {
                                             fontSize: 16,
                                           ),
                                         ),
+                                        Text(
+                                          "${task.teacherName}",
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
                                         const Spacer(),
                                         Text(
-                                          task.teacherName ?? '',
+                                          getClassRoom(task.classroom),
                                           maxLines: 1,
                                           style: const TextStyle(
                                             color: Colors.white,
@@ -279,5 +288,13 @@ class _ShedulePageState extends State<ShedulePage> {
         },
       ),
     );
+  }
+
+  String getClassRoom(String? value) {
+    if (value == 'None') {
+      return '';
+    } else {
+      return "Кабинет: $value";
+    }
   }
 }

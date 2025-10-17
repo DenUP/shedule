@@ -19,7 +19,7 @@ class SheduleRemoteDataSourceImpl implements SheduleRemoteDataSource {
         .select('''
 id, week_parity, subject_name, teacher_name, classroom, time_slots(day_of_week, start_time, end_time)
       ''')
-        .eq('group_id', 2)
+        .eq('group_id', 13)
         .eq('week_parity', parity); // Четная или не четная (Неделя)
     final data = response as List<dynamic>;
     return data.map((e) => Shedule.fromJson(e)).toList();

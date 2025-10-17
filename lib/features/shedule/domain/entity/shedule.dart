@@ -24,6 +24,7 @@ class Shedule {
     return Shedule(
       subjectName: e['subject_name'],
       teacherName: e['teacher_name'],
+      classroom: e['classroom'],
       dayOfWeek: ts['day_of_week'],
       startTime: ts['start_time'],
       endTime: ts['end_time'],
@@ -32,6 +33,7 @@ class Shedule {
   Map<String, dynamic> toJson() => {
     'subject_name': subjectName,
     'teacher_name': teacherName,
+    'classroom': classroom,
     'time_slots': {
       'start_time': startTime,
       'end_time': endTime,
