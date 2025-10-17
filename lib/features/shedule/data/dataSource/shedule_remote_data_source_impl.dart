@@ -17,13 +17,10 @@ class SheduleRemoteDataSourceImpl implements SheduleRemoteDataSource {
     final response = await client
         .from('regular_schedule')
         .select('''
-id, week_parity, subject_name, teacher_name, classroom, time_slots(day_of_week, start_time, end_time, description, is_break)
+id, week_parity, subject_name, teacher_name, classroom, time_slots(day_of_week, start_time, end_time)
       ''')
         .eq('group_id', 2)
-        .eq('time_slots.day_of_week', selectedDate.weekday)
-        .eq('week_parity', parity);
-    //// 🔹 фильтр по неделе
-    print(response);
+        .eq('week_parity', parity); // Четная или не четная (Неделя)
     final data = response as List<dynamic>;
     return data.map((e) => Shedule.fromJson(e)).toList();
   }

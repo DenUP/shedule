@@ -16,7 +16,6 @@ class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
     SheduleLoadEvent event,
     Emitter<SheduleState> emit,
   ) async {
-    print('📦 _onLoading вызван с датой ${event.selectedDate}');
     try {
       emit(SheduleLoading());
 
@@ -24,7 +23,6 @@ class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
         groupName: event.groupName,
         selectedDate: event.selectedDate,
       );
-      print('✅ Получено ${response.length} записей');
       emit(SheduleSuccess(shedule: response));
     } catch (e) {
       print('❌ Ошибка в _onLoading: $e');

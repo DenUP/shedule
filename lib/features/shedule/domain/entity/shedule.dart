@@ -16,7 +16,11 @@ class Shedule {
   });
 
   factory Shedule.fromJson(Map<String, dynamic> e) {
-    final ts = e['time_slots'] ?? {};
+    final ts = e['time_slots'];
+
+    if (ts == null) {
+      print(e);
+    }
     return Shedule(
       subjectName: e['subject_name'],
       teacherName: e['teacher_name'],
