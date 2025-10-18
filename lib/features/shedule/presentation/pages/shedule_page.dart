@@ -51,7 +51,7 @@ class _ShedulePageState extends State<ShedulePage> {
     final currentTop = timeToPixels(now, hourHeight);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEBEBEB),
+      backgroundColor: const Color(0xFFF5F5F5),
       body: BlocConsumer<SheduleBloc, SheduleState>(
         listener: (context, state) {},
         builder: (context, state) {
@@ -203,7 +203,11 @@ class _ShedulePageState extends State<ShedulePage> {
                                       children: [
                                         Text(
                                           task.subjectName,
-                                          maxLines: height < 100 ? 1 : null,
+                                          maxLines: height < 100
+                                              ? 1
+                                              : height < 140
+                                              ? 2
+                                              : null,
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
