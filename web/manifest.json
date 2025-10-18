@@ -1,6 +1,6 @@
 {
     "name": "Расписание",
-    "short_name": "Schedule",
+    "short_name": "Расписание",
     "start_url": "/shedule/",
     "display": "standalone",
     "background_color": "#ffffff",
