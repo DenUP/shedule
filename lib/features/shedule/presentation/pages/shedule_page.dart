@@ -95,9 +95,6 @@ class _ShedulePageState extends State<ShedulePage> {
                         daysCount: 30,
                         height: 90,
                         onDateChange: (date) {
-                          setState(() {
-                            _selectedDate = date;
-                          });
                           // Отправляем событие в BLoC
                           context.read<SheduleBloc>().add(
                             SheduleLoadEvent(
@@ -200,9 +197,18 @@ class _ShedulePageState extends State<ShedulePage> {
                                             fontSize: 16,
                                           ),
                                         ),
+                                        Text(
+                                          "${task.teacherName}",
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
                                         const Spacer(),
                                         Text(
-                                          task.teacherName ?? '',
+                                          getClassRoom(task.classroom),
                                           maxLines: 1,
                                           style: const TextStyle(
                                             color: Colors.white,
@@ -279,5 +285,13 @@ class _ShedulePageState extends State<ShedulePage> {
         },
       ),
     );
+  }
+
+  String getClassRoom(String? value) {
+    if (value == 'None') {
+      return '';
+    } else {
+      return "Кабинет: $value";
+    }
   }
 }
