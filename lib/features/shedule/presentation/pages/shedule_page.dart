@@ -279,7 +279,14 @@ class _ShedulePageState extends State<ShedulePage> {
                             ],
                           );
                         } else {
-                          return const SizedBox();
+                          return Center(
+                            child: Column(
+                              children: [
+                                Text('Pss.. загрузка'),
+                                CircularProgressIndicator(),
+                              ],
+                            ),
+                          );
                         }
                       },
                     ),
@@ -288,12 +295,7 @@ class _ShedulePageState extends State<ShedulePage> {
               ),
               const SizedBox(height: 20),
               GestureDetector(
-                onTap: () async {
-                  final url = Uri.parse("https://t.me/DenUp98");
-                  if (await canLaunchUrl(url)) {
-                    launchUrl(url, mode: LaunchMode.externalApplication);
-                  }
-                },
+                onTap: () => openTelegram(),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 20),
                   child: Text(
@@ -312,6 +314,19 @@ class _ShedulePageState extends State<ShedulePage> {
         },
       ),
     );
+  }
+
+  Future<void> openTelegram() async {
+    final tgUri = Uri.parse("tg://resolve?domain=DenUp98");
+    final httpsUri = Uri.parse("https://t.me/DenUp98");
+
+    // Проверяем можно ли открыть tg://
+    if (await canLaunchUrl(tgUri)) {
+      await launchUrl(tgUri, mode: LaunchMode.externalApplication);
+    } else {
+      // Фолбэк на обычную https ссылку
+      await launchUrl(httpsUri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Widget getClassRoom(String? value) {
