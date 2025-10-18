@@ -20,7 +20,6 @@ class SheduleRepositoryImpl implements SheduleRepository {
     final evenWeek = isEvenWeek(selectedDate);
     final parity = evenWeek ? 'even' : 'odd';
     final List<Shedule> data;
-
     final cache = localDataSource.getCache(parity);
     if (cache != null && cache.isNotEmpty) {
       data = cache;

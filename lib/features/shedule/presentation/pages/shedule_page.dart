@@ -75,6 +75,7 @@ class _ShedulePageState extends State<ShedulePage> {
                         left: 20,
                         top: 36,
                         bottom: 10,
+                        right: 20,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -126,7 +127,9 @@ class _ShedulePageState extends State<ShedulePage> {
                       builder: (context) {
                         if (state is SheduleLoading) {
                           return const Center(
-                            child: CircularProgressIndicator(),
+                            child: CircularProgressIndicator(
+                              color: Color(0xFFFFA726),
+                            ),
                           );
                         } else if (state is SheduleSuccess) {
                           return Stack(

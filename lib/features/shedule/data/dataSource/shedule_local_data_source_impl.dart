@@ -13,7 +13,6 @@ class SheduleLocalDataSourceImpl implements SheduleLocalDataSource {
 
   @override
   List<Shedule>? getCache(String parity) {
-    sharedPreferences.clear();
     final data = sharedPreferences.getStringList("${_keyLocal}_$parity");
     if (data == null || data.isEmpty) return null;
     final response = data.map((e) => Shedule.fromJson(json.decode(e))).toList();
