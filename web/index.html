@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -27,12 +28,24 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
-  <title>shedule_test</title>
+  <title>Расписание</title>
   <link rel="manifest" href="manifest.json">
+  {
+  "icons": [
+  { "src": "/favicon.ico", "type": "image/x-icon", "sizes": "16x16 32x32" },
+  { "src": "/icons/icon-192.png", "type": "image/png", "sizes": "192x192" },
+  { "src": "/icons/icon-512.png", "type": "image/png", "sizes": "512x512" },
+  { "src": "/icons/icon-192-maskable.png", "type": "image/png", "sizes": "192x192", "purpose": "maskable" },
+  { "src": "/icons/icon-512-maskable.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ]
+  }
 </head>
+
 <body>
   <script src="flutter_bootstrap.js" async></script>
 </body>
+
 </html>
