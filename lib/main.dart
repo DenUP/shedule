@@ -26,6 +26,7 @@ class MainApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        title: 'Расписание',
         debugShowCheckedModeBanner: false,
         home: ShedulePage(),
       ),
