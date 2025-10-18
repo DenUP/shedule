@@ -28,6 +28,14 @@ class _ShedulePageState extends State<ShedulePage> {
   }
 
   @override
+  void initState() {
+    context.read<SheduleBloc>().add(
+      SheduleLoadEvent(groupName: "22-2ИСП", selectedDate: _selectedDate),
+    );
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final double hourHeight = 100.0;
 
