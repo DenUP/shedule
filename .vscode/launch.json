@@ -8,7 +8,8 @@
             "name": "shedule_test",
             "request": "launch",
             "type": "dart",
-            "program": "lib/main.dart"
+            "program": "lib/main.dart",
+            "flutterMode": "debug"
         },
         {
             "name": "shedule_test (profile mode)",
