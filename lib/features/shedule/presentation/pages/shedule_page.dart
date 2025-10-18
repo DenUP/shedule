@@ -95,9 +95,6 @@ class _ShedulePageState extends State<ShedulePage> {
                         daysCount: 30,
                         height: 90,
                         onDateChange: (date) {
-                          setState(() {
-                            _selectedDate = date;
-                          });
                           // Отправляем событие в BLoC
                           context.read<SheduleBloc>().add(
                             SheduleLoadEvent(

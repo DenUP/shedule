@@ -8,19 +8,23 @@ class SheduleRemoteDataSourceImpl implements SheduleRemoteDataSource {
 
   SheduleRemoteDataSourceImpl({required this.client});
   @override
+  @override
   Future<List<Shedule>> getShedule({
     required String groupName,
     required DateTime selectedDate,
   }) async {
     final evenWeek = isEvenWeek(selectedDate);
-    final parity = evenWeek ? 'even' : 'odd';
+    final parity = evenWeek ? 'even' : 'odd'; //Четная (even)
+
     final response = await client
         .from('regular_schedule')
         .select('''
-id, week_parity, subject_name, teacher_name, classroom, time_slots(day_of_week, start_time, end_time)
+        id, week_parity, subject_name, teacher_name, classroom, 
+        time_slots(day_of_week, start_time, end_time)
       ''')
         .eq('group_id', 13)
-        .eq('week_parity', parity); // Четная или не четная (Неделя)
+        .eq('week_parity', parity);
+
     final data = response as List<dynamic>;
     return data.map((e) => Shedule.fromJson(e)).toList();
   }
