@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:shedule_test/core/utils/time_utils.dart';
 import 'package:shedule_test/features/shedule/presentation/bloc/shedule_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ShedulePage extends StatefulWidget {
   const ShedulePage({super.key});
@@ -14,7 +15,7 @@ class ShedulePage extends StatefulWidget {
 }
 
 class _ShedulePageState extends State<ShedulePage> {
-  DateTime _selectedDate = DateTime.now();
+  final DateTime _selectedDate = DateTime.now();
 
   String formatTime24(TimeOfDay time) {
     final now = DateTime.now();
@@ -73,7 +74,7 @@ class _ShedulePageState extends State<ShedulePage> {
                     Padding(
                       padding: const EdgeInsets.only(
                         left: 20,
-                        top: 36,
+                        top: 30,
                         bottom: 10,
                         right: 20,
                       ),
@@ -202,32 +203,26 @@ class _ShedulePageState extends State<ShedulePage> {
                                       children: [
                                         Text(
                                           task.subjectName,
+                                          maxLines: height < 100 ? 1 : null,
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                           ),
                                         ),
-                                        Text(
-                                          "${task.teacherName}",
-                                          maxLines: 1,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
+                                        height > 100
+                                            ? Text(
+                                                "${task.teacherName}",
+                                                maxLines: 1,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              )
+                                            : SizedBox(),
                                         const Spacer(),
-                                        Text(
-                                          getClassRoom(task.classroom),
-                                          maxLines: 1,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-
+                                        getClassRoom(task.classroom),
                                         Row(
                                           children: [
                                             SvgPicture.asset(
@@ -291,6 +286,27 @@ class _ShedulePageState extends State<ShedulePage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () async {
+                  final url = Uri.parse("https://t.me/DenUp98");
+                  if (await canLaunchUrl(url)) {
+                    launchUrl(url, mode: LaunchMode.externalApplication);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Text(
+                    "Обратная связь (Telegram)",
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                      color: Colors.blue.shade600,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
             ],
           );
         },
@@ -298,11 +314,19 @@ class _ShedulePageState extends State<ShedulePage> {
     );
   }
 
-  String getClassRoom(String? value) {
-    if (value == 'None') {
-      return '';
+  Widget getClassRoom(String? value) {
+    if (value == 'None' && value != null) {
+      return SizedBox();
     } else {
-      return "Кабинет: $value";
+      return Text(
+        "Кабинет: $value",
+        maxLines: 1,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      );
     }
   }
 }

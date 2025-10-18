@@ -29,6 +29,7 @@ class SheduleLocalDataSourceImpl implements SheduleLocalDataSource {
     return shared;
   }
 
+  @override
   Future<void> clearCache() async {
     await sharedPreferences.remove("${_keyLocal}_even");
     await sharedPreferences.remove("${_keyLocal}_odd");
