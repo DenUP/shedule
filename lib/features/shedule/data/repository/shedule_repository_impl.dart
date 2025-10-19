@@ -1,4 +1,6 @@
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shedule_test/core/utils/time_utils.dart';
+import 'package:shedule_test/dependecy_injection.dart';
 import 'package:shedule_test/features/shedule/domain/dataSource/shedule_local_data_source.dart';
 import 'package:shedule_test/features/shedule/domain/dataSource/shedule_remote_data_source.dart';
 import 'package:shedule_test/features/shedule/domain/entity/shedule.dart';
@@ -20,21 +22,29 @@ class SheduleRepositoryImpl implements SheduleRepository {
     final evenWeek = isEvenWeek(selectedDate);
     final parity = evenWeek ? 'even' : 'odd';
     final List<Shedule> data;
+    final isInternet = await getIt<InternetConnection>().hasInternetAccess;
     final cache = localDataSource.getCache(parity);
-    if (cache != null && cache.isNotEmpty) {
-      data = cache;
-    } else {
-      data = await remoteDataSource.getShedule(
-        groupName: groupName,
-        selectedDate: selectedDate,
-      );
-      localDataSource.saveCache(parity, data);
-    }
-    final currentWeek = selectedDate.weekday;
+    try {
+      if (isInternet) {
+        data = await remoteDataSource.getShedule(
+          groupName: groupName,
+          selectedDate: selectedDate,
+        );
+        localDataSource.saveCache(parity, data);
+      } else if (cache != null) {
+        data = cache;
+      } else {
+        throw Exception('Нету КЭША и Интернета');
+      }
 
-    final filtered = data.where((e) {
-      return e.dayOfWeek == currentWeek;
-    }).toList();
-    return filtered;
+      final currentWeek = selectedDate.weekday;
+
+      final filtered = data.where((e) {
+        return e.dayOfWeek == currentWeek;
+      }).toList();
+      return filtered;
+    } catch (e) {
+      throw Exception('Данные пришли с ошибкой - $e');
+    }
   }
 }
