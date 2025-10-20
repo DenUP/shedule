@@ -283,11 +283,29 @@ class _ShedulePageState extends State<ShedulePage> {
                             ],
                           );
                         } else {
-                          return Center(
+                          return Padding(
+                            padding: const EdgeInsets.all(24.0),
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('Pss.. загрузка'),
-                                CircularProgressIndicator(),
+                                Icon(
+                                  Icons.wifi_off,
+                                  size: 80,
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(height: 20),
+                                Text(
+                                  'Нет интернета',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  'Пожалуйста, подключитесь к сети и попробуйте снова.',
+                                  textAlign: TextAlign.center,
+                                ),
                               ],
                             ),
                           );
