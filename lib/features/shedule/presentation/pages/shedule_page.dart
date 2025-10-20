@@ -41,10 +41,9 @@ class _ShedulePageState extends State<ShedulePage> {
       final savedGroup = getIt<SheduleLocalDataSource>().getSelectedGroup();
 
       if (savedGroup == null) {
-        // Группа не выбрана — показываем модалку
         await _showGroupPicker();
       } else {
-        // Группа выбрана — сразу загружаем расписание
+        _selectedGroup = savedGroup; // <-- присвоение состояния
         context.read<SheduleBloc>().add(
           SheduleLoadEvent(groupName: savedGroup, selectedDate: DateTime.now()),
         );

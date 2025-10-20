@@ -24,8 +24,6 @@ class SheduleRepositoryImpl implements SheduleRepository {
     final List<Shedule> data;
     final isInternet = await getIt<InternetConnection>().hasInternetAccess;
     final cache = localDataSource.getCache(parity);
-    localDataSource.clearSelectedGroup();
-    localDataSource.clearCache();
     try {
       if (isInternet) {
         data = await remoteDataSource.getShedule(
