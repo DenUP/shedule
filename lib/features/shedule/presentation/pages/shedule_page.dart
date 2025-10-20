@@ -1,9 +1,13 @@
 import 'package:date_picker_timeline/date_picker_widget.dart';
+import 'package:date_picker_timeline/extra/color.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:shedule_test/core/utils/time_utils.dart';
+import 'package:shedule_test/dependecy_injection.dart';
+import 'package:shedule_test/features/shedule/domain/dataSource/shedule_local_data_source.dart';
 import 'package:shedule_test/features/shedule/presentation/bloc/shedule_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -15,6 +19,7 @@ class ShedulePage extends StatefulWidget {
 }
 
 class _ShedulePageState extends State<ShedulePage> {
+  String? _selectedGroup;
   final DateTime _selectedDate = DateTime.now();
 
   String formatTime24(TimeOfDay time) {
@@ -30,10 +35,21 @@ class _ShedulePageState extends State<ShedulePage> {
 
   @override
   void initState() {
-    context.read<SheduleBloc>().add(
-      SheduleLoadEvent(groupName: "22-2ИСП", selectedDate: _selectedDate),
-    );
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final savedGroup = getIt<SheduleLocalDataSource>().getSelectedGroup();
+
+      if (savedGroup == null) {
+        // Группа не выбрана — показываем модалку
+        await _showGroupPicker();
+      } else {
+        // Группа выбрана — сразу загружаем расписание
+        context.read<SheduleBloc>().add(
+          SheduleLoadEvent(groupName: savedGroup, selectedDate: DateTime.now()),
+        );
+      }
+    });
   }
 
   @override
@@ -106,12 +122,14 @@ class _ShedulePageState extends State<ShedulePage> {
                         height: 90,
                         onDateChange: (date) {
                           // Отправляем событие в BLoC
-                          context.read<SheduleBloc>().add(
-                            SheduleLoadEvent(
-                              groupName: "22-2ИСП",
-                              selectedDate: date,
-                            ),
-                          );
+                          if (_selectedGroup != null) {
+                            context.read<SheduleBloc>().add(
+                              SheduleLoadEvent(
+                                groupName: _selectedGroup!,
+                                selectedDate: date,
+                              ),
+                            );
+                          }
                         },
                       ),
                     ),
@@ -207,6 +225,8 @@ class _ShedulePageState extends State<ShedulePage> {
                                               ? 1
                                               : height < 140
                                               ? 2
+                                              : height < 200
+                                              ? 4
                                               : null,
                                           style: const TextStyle(
                                             color: Colors.white,
@@ -282,7 +302,7 @@ class _ShedulePageState extends State<ShedulePage> {
                               ),
                             ],
                           );
-                        } else {
+                        } else if (state is SheduleError) {
                           return Padding(
                             padding: const EdgeInsets.all(24.0),
                             child: Column(
@@ -309,6 +329,8 @@ class _ShedulePageState extends State<ShedulePage> {
                               ],
                             ),
                           );
+                        } else {
+                          return SizedBox();
                         }
                       },
                     ),
@@ -335,6 +357,80 @@ class _ShedulePageState extends State<ShedulePage> {
           );
         },
       ),
+    );
+  }
+
+  Future<void> _showGroupPicker() async {
+    final List<String> groups = [
+      "11",
+      "12",
+      "21",
+      "22",
+      "22-27ТМ",
+      "22-2ИСП",
+      "23-29ТМ",
+      "23-3ИСП",
+      "24-31ТМ",
+      "25-33ТМ",
+    ];
+    String selectedGroup = groups[0];
+
+    await showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (BuildContext context) {
+        return Center(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height / 2,
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                const Text(
+                  "Выберите группу",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                Expanded(
+                  child: CupertinoPicker(
+                    itemExtent: 40,
+                    onSelectedItemChanged: (index) {
+                      selectedGroup = groups[index];
+                      _selectedGroup = selectedGroup;
+                    },
+                    children: groups
+                        .map((e) => Center(child: Text(e)))
+                        .toList(),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // Сохраняем выбранную группу
+                    await getIt<SheduleLocalDataSource>().saveSelectedGroup(
+                      selectedGroup,
+                    );
+                    if (!context.mounted) return;
+                    Navigator.pop(context); // закрываем модалку
+
+                    // Загружаем расписание
+                    context.read<SheduleBloc>().add(
+                      SheduleLoadEvent(
+                        groupName: selectedGroup,
+                        selectedDate: DateTime.now(),
+                      ),
+                    );
+                  },
+                  child: const Text("Подтвердить"),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

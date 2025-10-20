@@ -16,7 +16,7 @@ class SheduleRepositoryImpl implements SheduleRepository {
   });
   @override
   Future<List<Shedule>> getShedule({
-    required String groupName,
+    required int groupId,
     required DateTime selectedDate,
   }) async {
     final evenWeek = isEvenWeek(selectedDate);
@@ -24,11 +24,12 @@ class SheduleRepositoryImpl implements SheduleRepository {
     final List<Shedule> data;
     final isInternet = await getIt<InternetConnection>().hasInternetAccess;
     final cache = localDataSource.getCache(parity);
+    localDataSource.clearSelectedGroup();
     localDataSource.clearCache();
     try {
       if (isInternet) {
         data = await remoteDataSource.getShedule(
-          groupName: groupName,
+          groupId: groupId,
           selectedDate: selectedDate,
         );
         localDataSource.saveCache(parity, data);

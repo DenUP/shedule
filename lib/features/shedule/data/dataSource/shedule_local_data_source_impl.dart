@@ -11,6 +11,24 @@ class SheduleLocalDataSourceImpl implements SheduleLocalDataSource {
 
   final _keyLocal = 'keyLocal';
 
+  final _keyGroup = 'selected_group';
+
+  // Существующие методы getCache, saveCache, clearCache ...
+  @override
+  Future<void> saveSelectedGroup(String group) async {
+    await sharedPreferences.setString(_keyGroup, group);
+  }
+
+  @override
+  String? getSelectedGroup() {
+    return sharedPreferences.getString(_keyGroup);
+  }
+
+  @override
+  Future<void> clearSelectedGroup() async {
+    await sharedPreferences.remove(_keyGroup);
+  }
+
   @override
   List<Shedule>? getCache(String parity) {
     final data = sharedPreferences.getStringList("${_keyLocal}_$parity");
