@@ -5,4 +5,8 @@ abstract class SheduleRemoteDataSource {
     required int groupId,
     required DateTime selectedDate,
   });
+  Future<List<Shedule>> getChangedShedule({
+    required int groupId,
+    required DateTime selectedDate,
+  });
 }

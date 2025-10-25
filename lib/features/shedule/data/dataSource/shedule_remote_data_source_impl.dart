@@ -8,7 +8,6 @@ class SheduleRemoteDataSourceImpl implements SheduleRemoteDataSource {
 
   SheduleRemoteDataSourceImpl({required this.client});
   @override
-  @override
   Future<List<Shedule>> getShedule({
     required int groupId,
     required DateTime selectedDate,
@@ -23,6 +22,24 @@ class SheduleRemoteDataSourceImpl implements SheduleRemoteDataSource {
       ''')
         .eq('group_id', groupId)
         .eq('week_parity', parity);
+
+    final data = response as List<dynamic>;
+    return data.map((e) => Shedule.fromJson(e)).toList();
+  }
+
+  @override
+  Future<List<Shedule>> getChangedShedule({
+    required int groupId,
+    required DateTime selectedDate,
+  }) async {
+    final response = await client
+        .from('changed_schedule')
+        .select('''
+        id, group_id, date, subject_name, teacher_name, classroom,
+        time_slots(day_of_week, start_time, end_time)
+      ''')
+        .eq('group_id', groupId)
+        .eq('date', selectedDate.toIso8601String().substring(0, 10));
 
     final data = response as List<dynamic>;
     return data.map((e) => Shedule.fromJson(e)).toList();

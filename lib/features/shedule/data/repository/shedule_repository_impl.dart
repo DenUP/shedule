@@ -26,11 +26,16 @@ class SheduleRepositoryImpl implements SheduleRepository {
     final cache = localDataSource.getCache(parity);
     try {
       if (isInternet) {
-        data = await remoteDataSource.getShedule(
+        final baseData = await remoteDataSource.getShedule(
           groupId: groupId,
           selectedDate: selectedDate,
         );
-        localDataSource.saveCache(parity, data);
+        final changedData = await remoteDataSource.getChangedShedule(
+          groupId: groupId,
+          selectedDate: selectedDate,
+        );
+        data = applyChanges(baseData, changedData);
+        await localDataSource.saveCache(parity, data);
       } else if (cache != null) {
         data = cache;
       } else {
@@ -46,5 +51,28 @@ class SheduleRepositoryImpl implements SheduleRepository {
     } catch (e) {
       throw Exception('Данные пришли с ошибкой - $e');
     }
+  }
+
+  List<Shedule> applyChanges(List<Shedule> base, List<Shedule> changed) {
+    if (changed.isEmpty) return base;
+
+    final modifiedList = List<Shedule>.from(base);
+
+    for (final change in changed) {
+      final index = modifiedList.indexWhere(
+        (e) =>
+            e.startTime == change.startTime && e.dayOfWeek == change.dayOfWeek,
+      );
+
+      if (index != -1) {
+        // замена
+        modifiedList[index] = change;
+      } else {
+        // добавление новой пары
+        modifiedList.add(change);
+      }
+    }
+
+    return modifiedList;
   }
 }
