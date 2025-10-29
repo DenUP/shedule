@@ -436,9 +436,9 @@ class _ShedulePageState extends State<ShedulePage> {
                         await getIt<SheduleLocalDataSource>().saveSelectedGroup(
                           selectedGroup,
                         );
+                        _selectedGroup = selectedGroup;
                         if (!context.mounted) return;
                         Navigator.pop(context); // закрываем модалку
-
                         // Загружаем расписание
                         context.read<SheduleBloc>().add(
                           SheduleLoadEvent(
