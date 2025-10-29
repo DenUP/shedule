@@ -96,12 +96,24 @@ class _ShedulePageState extends State<ShedulePage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            formatTimeMonthDay(DateTime.now()),
-                            style: const TextStyle(
-                              color: Color(0xFF131313),
-                              fontSize: 25,
-                              fontWeight: FontWeight.w900,
+                          InkWell(
+                            onTap: () async {
+                              getIt<SheduleLocalDataSource>()
+                                  .clearSelectedGroup();
+                              await _showGroupPicker();
+                            },
+                            child: Row(
+                              children: [
+                                Text(
+                                  _selectedGroup ?? '',
+                                  style: const TextStyle(
+                                    color: Color(0xFF131313),
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                Icon(Icons.arrow_drop_down),
+                              ],
                             ),
                           ),
                           Text(getEvenWeekString),
@@ -380,7 +392,7 @@ class _ShedulePageState extends State<ShedulePage> {
       enableDrag: false,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(50)),
       ),
       builder: (BuildContext context) {
         return Center(
@@ -388,14 +400,13 @@ class _ShedulePageState extends State<ShedulePage> {
             height: MediaQuery.of(context).size.height / 2,
             child: Column(
               children: [
-                const SizedBox(height: 16),
                 const Text(
                   "Выберите группу",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Expanded(
                   child: CupertinoPicker(
-                    itemExtent: 40,
+                    itemExtent: 60,
                     onSelectedItemChanged: (index) {
                       selectedGroup = groups[index];
                       _selectedGroup = selectedGroup;
@@ -405,24 +416,43 @@ class _ShedulePageState extends State<ShedulePage> {
                         .toList(),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    // Сохраняем выбранную группу
-                    await getIt<SheduleLocalDataSource>().saveSelectedGroup(
-                      selectedGroup,
-                    );
-                    if (!context.mounted) return;
-                    Navigator.pop(context); // закрываем модалку
-
-                    // Загружаем расписание
-                    context.read<SheduleBloc>().add(
-                      SheduleLoadEvent(
-                        groupName: selectedGroup,
-                        selectedDate: DateTime.now(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: SizedBox(
+                    height: 60,
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadiusGeometry.circular(10),
+                        ),
+                        backgroundColor: Color(0xFF1957FE),
                       ),
-                    );
-                  },
-                  child: const Text("Подтвердить"),
+                      onPressed: () async {
+                        // Сохраняем выбранную группу
+                        await getIt<SheduleLocalDataSource>().saveSelectedGroup(
+                          selectedGroup,
+                        );
+                        if (!context.mounted) return;
+                        Navigator.pop(context); // закрываем модалку
+
+                        // Загружаем расписание
+                        context.read<SheduleBloc>().add(
+                          SheduleLoadEvent(
+                            groupName: selectedGroup,
+                            selectedDate: DateTime.now(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Подтвердить",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
               ],
