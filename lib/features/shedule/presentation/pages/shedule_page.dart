@@ -66,7 +66,7 @@ class _ShedulePageState extends State<ShedulePage> {
     final currentTop = timeToPixels(now, hourHeight);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF8F9FE),
       body: BlocConsumer<SheduleBloc, SheduleState>(
         listener: (context, state) {},
         builder: (context, state) {
@@ -107,7 +107,7 @@ class _ShedulePageState extends State<ShedulePage> {
                                 Text(
                                   _selectedGroup ?? '',
                                   style: const TextStyle(
-                                    color: Color(0xFF131313),
+                                    color: Color(0xFF1F2024),
                                     fontSize: 25,
                                     fontWeight: FontWeight.w900,
                                   ),
@@ -116,7 +116,10 @@ class _ShedulePageState extends State<ShedulePage> {
                               ],
                             ),
                           ),
-                          Text(getEvenWeekString),
+                          Text(
+                            getEvenWeekString,
+                            style: TextStyle(color: Color(0xFF71727A)),
+                          ),
                         ],
                       ),
                     ),
@@ -181,7 +184,7 @@ class _ShedulePageState extends State<ShedulePage> {
                                           right: 0,
                                           child: Container(
                                             height: 1,
-                                            color: const Color(0xFFB0B0B0),
+                                            color: const Color(0xFFC5C6CC),
                                           ),
                                         ),
                                         Positioned(
@@ -449,6 +452,7 @@ class _ShedulePageState extends State<ShedulePage> {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                     ),
