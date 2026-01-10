@@ -12,22 +12,34 @@ double timeToPixels(TimeOfDay time, double hourHeight) {
   return (time.hour - 8 + time.minute / 60.0) * hourHeight;
 }
 
-// Четная или не четная неделя
-
-// Создаем расширение для удобства
-extension on DateTime {
-  int get weekOfYear {
-    final startOfYear = DateTime(year, 1, 1);
-    final weekNumber =
-        ((difference(startOfYear).inDays + startOfYear.weekday) / 7).ceil();
-    return weekNumber;
+// Функция для получения номера учебной недели от 1 сентября
+int getAcademicWeekNumber(DateTime date) {
+  // Определяем начало учебного года (1 сентября)
+  DateTime academicYearStart;
+  if (date.month >= 9) {
+    // Если текущая дата после сентября, учебный год начался в этом году
+    academicYearStart = DateTime(date.year, 9, 1);
+  } else {
+    // Если текущая дата до сентября, учебный год начался в прошлом году
+    academicYearStart = DateTime(date.year - 1, 9, 1);
   }
+
+  // Вычисляем разницу в днях
+  int differenceInDays = date.difference(academicYearStart).inDays;
+
+  // Если дата раньше начала учебного года
+  if (differenceInDays < 0) {
+    return 1;
+  }
+
+  // Вычисляем номер недели (начиная с 1)
+  int weekNumber = (differenceInDays ~/ 7) + 1;
+  return weekNumber;
 }
 
 bool isEvenWeek([DateTime? date]) {
   final targetDate = date ?? DateTime.now();
-
-  final weekNumber = targetDate.weekOfYear;
+  final weekNumber = getAcademicWeekNumber(targetDate);
   return weekNumber % 2 == 0;
 }
 
