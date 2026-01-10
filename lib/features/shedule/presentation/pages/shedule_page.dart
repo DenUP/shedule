@@ -1,15 +1,14 @@
 import 'package:date_picker_timeline/date_picker_widget.dart';
-import 'package:date_picker_timeline/extra/color.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shedule_test/core/utils/time_utils.dart';
 import 'package:shedule_test/dependecy_injection.dart';
 import 'package:shedule_test/features/shedule/domain/dataSource/shedule_local_data_source.dart';
 import 'package:shedule_test/features/shedule/presentation/bloc/shedule_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ShedulePage extends StatefulWidget {
   const ShedulePage({super.key});
@@ -21,6 +20,85 @@ class ShedulePage extends StatefulWidget {
 class _ShedulePageState extends State<ShedulePage> {
   String? _selectedGroup;
   final DateTime _selectedDate = DateTime.now();
+
+  _addDateBar() {
+    return Container(
+      margin: const EdgeInsets.only(top: 20, left: 15),
+      child: Expanded(
+        child: DatePicker(
+          locale: 'ru_RU',
+          DateTime.now(),
+          height: 100,
+          width: 80,
+          initialSelectedDate: DateTime.now(),
+          selectionColor: Color(0xFF4e5ae8),
+          selectedTextColor: Colors.white,
+          dateTextStyle: GoogleFonts.lato(
+            textStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey,
+            ),
+          ),
+          dayTextStyle: GoogleFonts.lato(
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey,
+            ),
+          ),
+          monthTextStyle: GoogleFonts.lato(
+            textStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey,
+            ),
+          ),
+          onDateChange: (date) {
+            // Отправляем событие в BLoC
+            if (_selectedGroup != null) {
+              context.read<SheduleBloc>().add(
+                SheduleLoadEvent(
+                  groupName: _selectedGroup!,
+                  selectedDate: date,
+                ),
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  _appBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      title: GestureDetector(
+        onTap: () async {
+          getIt<SheduleLocalDataSource>().clearSelectedGroup();
+          await _showGroupPicker();
+        },
+        child: Row(
+          children: [
+            Text(
+              _selectedGroup ?? '',
+              style: const TextStyle(
+                color: Color(0xFF1F2024),
+                fontSize: 25,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            Icon(Icons.arrow_drop_down),
+          ],
+        ),
+      ),
+      actions: [
+        Text(getEvenWeekString, style: TextStyle(color: Color(0xFF71727A))),
+        SizedBox(width: 20),
+      ],
+    );
+  }
 
   String formatTime24(TimeOfDay time) {
     final now = DateTime.now();
@@ -53,103 +131,29 @@ class _ShedulePageState extends State<ShedulePage> {
 
   @override
   Widget build(BuildContext context) {
-    final double hourHeight = 100.0;
+    final double hourHeight = 120.0;
 
     final taskColors = [
-      const Color(0xFF42A5F5), // насыщенный синий
-      const Color(0xFFFFA726), // ярко-оранжевый
+      const Color(0xFF4e5ae8), // насыщенный синий
+      const Color(0xFFFFB746), // ярко-оранжевый
       const Color(0xFF66BB6A), // зелёный
-      const Color(0xFFAB47BC), // фиолетовый
+      const Color(0xFFff4667), // фиолетовый
     ];
 
     final now = TimeOfDay.now();
     final currentTop = timeToPixels(now, hourHeight);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      body: BlocConsumer<SheduleBloc, SheduleState>(
-        listener: (context, state) {},
-        builder: (context, state) {
-          return Column(
+    return BlocConsumer<SheduleBloc, SheduleState>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        return Scaffold(
+          appBar: _appBar(),
+          backgroundColor: Colors.white,
+          body: Column(
             children: [
               // ---------- Верхний блок ----------
-              Container(
-                height: 180,
-                width: MediaQuery.of(context).size.width,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(30),
-                    bottom: Radius.circular(30),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 20,
-                        top: 30,
-                        bottom: 10,
-                        right: 20,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          InkWell(
-                            onTap: () async {
-                              getIt<SheduleLocalDataSource>()
-                                  .clearSelectedGroup();
-                              await _showGroupPicker();
-                            },
-                            child: Row(
-                              children: [
-                                Text(
-                                  _selectedGroup ?? '',
-                                  style: const TextStyle(
-                                    color: Color(0xFF1F2024),
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                Icon(Icons.arrow_drop_down),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            getEvenWeekString,
-                            style: TextStyle(color: Color(0xFF71727A)),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // ---------- DatePicker ----------
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: DatePicker(
-                        DateTime.now().subtract(const Duration(days: 0)),
-                        initialSelectedDate: _selectedDate,
-                        selectionColor: const Color(0xFF01021D),
-                        selectedTextColor: Colors.white,
-                        locale: 'ru_RU',
-                        daysCount: 30,
-                        height: 90,
-                        onDateChange: (date) {
-                          // Отправляем событие в BLoC
-                          if (_selectedGroup != null) {
-                            context.read<SheduleBloc>().add(
-                              SheduleLoadEvent(
-                                groupName: _selectedGroup!,
-                                selectedDate: date,
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _addDateBar(),
+              SizedBox(height: 10),
 
               // ---------- Контент с расписанием ----------
               Expanded(
@@ -172,7 +176,7 @@ class _ShedulePageState extends State<ShedulePage> {
                                 children: List.generate(10, (index) {
                                   final label = DateFormat(
                                     'H:mm',
-                                  ).format(DateTime(0, 0, 0, index + 7));
+                                  ).format(DateTime(0, 0, 0, index + 8));
                                   return SizedBox(
                                     height: hourHeight,
                                     child: Stack(
@@ -242,10 +246,10 @@ class _ShedulePageState extends State<ShedulePage> {
                                               : height < 200
                                               ? 4
                                               : null,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                          style: TextStyle(
                                             fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
                                           ),
                                         ),
                                         height > 100
@@ -263,21 +267,17 @@ class _ShedulePageState extends State<ShedulePage> {
                                         getClassRoom(task.classroom),
                                         Row(
                                           children: [
-                                            SvgPicture.asset(
-                                              'assets/icons/clock.svg',
-                                              width: 14,
-                                              colorFilter:
-                                                  const ColorFilter.mode(
-                                                    Colors.white70,
-                                                    BlendMode.srcIn,
-                                                  ),
+                                            Icon(
+                                              Icons.access_time_rounded,
+                                              color: Colors.grey[200],
+                                              size: 18,
                                             ),
                                             const SizedBox(width: 6),
                                             Text(
                                               '${formatTime24(start)} - ${formatTime24(end)}',
-                                              style: const TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 12,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey[100],
                                               ),
                                             ),
                                           ],
@@ -351,26 +351,10 @@ class _ShedulePageState extends State<ShedulePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () => openTelegram(),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Text(
-                    "Обратная связь (Telegram)",
-                    style: TextStyle(
-                      decoration: TextDecoration.underline,
-                      color: Colors.blue.shade600,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -467,19 +451,6 @@ class _ShedulePageState extends State<ShedulePage> {
     );
   }
 
-  Future<void> openTelegram() async {
-    final tgUri = Uri.parse("tg://resolve?domain=DenUp98");
-    final httpsUri = Uri.parse("https://t.me/DenUp98");
-
-    // Проверяем можно ли открыть tg://
-    if (await canLaunchUrl(tgUri)) {
-      await launchUrl(tgUri, mode: LaunchMode.externalApplication);
-    } else {
-      // Фолбэк на обычную https ссылку
-      await launchUrl(httpsUri, mode: LaunchMode.externalApplication);
-    }
-  }
-
   Widget getClassRoom(String? value) {
     if (value == 'None' && value != null) {
       return SizedBox();
@@ -489,7 +460,7 @@ class _ShedulePageState extends State<ShedulePage> {
         maxLines: 1,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
       );

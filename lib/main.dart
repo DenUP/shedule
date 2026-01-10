@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shedule_test/dependecy_injection.dart';
 import 'package:shedule_test/features/shedule/domain/repositories/shedule_repository.dart';
 import 'package:shedule_test/features/shedule/presentation/bloc/shedule_bloc.dart';
@@ -28,6 +29,7 @@ class MainApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Расписание',
         debugShowCheckedModeBanner: false,
+        theme: ThemeData(fontFamily: GoogleFonts.lato().fontFamily),
         home: ShedulePage(),
       ),
     );

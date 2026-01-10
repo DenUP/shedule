@@ -9,7 +9,7 @@ TimeOfDay parseTime(String timeString) {
 }
 
 double timeToPixels(TimeOfDay time, double hourHeight) {
-  return (time.hour - 7 + time.minute / 60.0) * hourHeight;
+  return (time.hour - 8 + time.minute / 60.0) * hourHeight;
 }
 
 // Четная или не четная неделя
