@@ -3,6 +3,11 @@
 ### 🕓 Открыть приложение (Веб версия)
 [Открыть расписание](https://denup.github.io/shedule/)
 
+## 📸 Скриншоты приложения
+
+
+<img src="readme/1.png" alt="Main screen" width="49%" />
+<img src="readme/2.png" alt="Group screen" width="49%" />
 ---
 
 **Shedule** — это всегда актуальное расписание **под рукой**.  
