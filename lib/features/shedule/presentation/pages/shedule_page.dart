@@ -1,10 +1,9 @@
 import 'package:date_picker_timeline/date_picker_widget.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:shedule_test/core/network/updatechecker.dart';
 import 'package:shedule_test/core/utils/time_utils.dart';
 import 'package:shedule_test/dependecy_injection.dart';
 import 'package:shedule_test/features/shedule/domain/dataSource/shedule_local_data_source.dart';
@@ -116,6 +115,7 @@ class _ShedulePageState extends State<ShedulePage> {
           SheduleLoadEvent(groupName: savedGroup, selectedDate: _selectedDate),
         );
       }
+      UpdateChecker.showUpdateDialog(context);
     });
   }
 
