@@ -2,11 +2,11 @@ import 'package:shedule_test/features/shedule/domain/entity/shedule.dart';
 
 abstract class SheduleRemoteDataSource {
   Future<List<Shedule>> getShedule({
-    required int groupId,
+    required String groupName, // Теперь принимаем имя группы
     required DateTime selectedDate,
   });
   Future<List<Shedule>> getChangedShedule({
-    required int groupId,
+    required String groupName,
     required DateTime selectedDate,
   });
 }

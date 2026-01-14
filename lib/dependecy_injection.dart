@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shedule_test/features/shedule/data/dataSource/group_remote_data_source_impl.dart';
 import 'package:shedule_test/features/shedule/data/dataSource/shedule_local_data_source_impl.dart';
 import 'package:shedule_test/features/shedule/data/dataSource/shedule_remote_data_source_impl.dart';
 import 'package:shedule_test/features/shedule/data/repository/shedule_repository_impl.dart';
@@ -25,8 +26,14 @@ Future<void> init() async {
   getIt.registerLazySingleton<InternetConnection>(() => InternetConnection());
   getIt.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
-  getIt.registerLazySingleton<SheduleRemoteDataSource>(
-    () => SheduleRemoteDataSourceImpl(client: getIt()),
+  getIt.registerSingleton<GroupRemoteDataSource>(
+    GroupRemoteDataSource(client: getIt<SupabaseClient>()),
+  );
+  getIt.registerSingleton<SheduleRemoteDataSource>(
+    SheduleRemoteDataSourceImpl(
+      client: getIt<SupabaseClient>(),
+      groupDataSource: getIt<GroupRemoteDataSource>(),
+    ),
   );
   getIt.registerLazySingleton<SheduleLocalDataSource>(
     () => SheduleLocalDataSourceImpl(sharedPreferences: getIt()),

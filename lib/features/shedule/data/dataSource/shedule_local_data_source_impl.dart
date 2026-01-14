@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shedule_test/features/shedule/domain/dataSource/shedule_local_data_source.dart';
+import 'package:shedule_test/features/shedule/domain/entity/group.dart';
 import 'package:shedule_test/features/shedule/domain/entity/shedule.dart';
 
 class SheduleLocalDataSourceImpl implements SheduleLocalDataSource {
@@ -51,5 +52,17 @@ class SheduleLocalDataSourceImpl implements SheduleLocalDataSource {
   Future<void> clearCache() async {
     await sharedPreferences.remove("${_keyLocal}_even");
     await sharedPreferences.remove("${_keyLocal}_odd");
+  }
+
+  @override
+  Future<List<Group>> getGroupsList() {
+    // TODO: implement getGroupsList
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> saveGroupsList(List<Group> groups) {
+    // TODO: implement saveGroupsList
+    throw UnimplementedError();
   }
 }

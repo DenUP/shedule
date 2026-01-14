@@ -361,7 +361,7 @@ class _ShedulePageState extends State<ShedulePage> {
       right: 16,
       child: Container(
         height: height - 4,
-        decoration: BoxDecoration(
+        decoration: BoxDecoration( 
           color: color,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
