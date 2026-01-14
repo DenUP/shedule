@@ -31,11 +31,13 @@ class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
   ) async {
     try {
       emit(SheduleLoading());
-      final groupId = groupMap[event.groupName]!;
+
+      // Теперь передаем имя группы напрямую, репозиторий сам найдет ID
       final response = await repository.getShedule(
-        groupId: groupId,
+        groupName: event.groupName, // Используем имя группы
         selectedDate: event.selectedDate,
       );
+
       emit(SheduleSuccess(shedule: response));
     } catch (e) {
       print('❌ Ошибка в _onLoading: $e');
