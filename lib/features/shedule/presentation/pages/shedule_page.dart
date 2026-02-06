@@ -243,6 +243,7 @@ class _ShedulePageState extends State<ShedulePage> {
       actions: _selectedGroup != null
           ? [
               Container(
+                width: 130,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 6,
@@ -262,6 +263,7 @@ class _ShedulePageState extends State<ShedulePage> {
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ]
