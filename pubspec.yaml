@@ -17,6 +17,7 @@ dependencies:
   get_it: ^8.2.0
   google_fonts: ^7.0.0
   http: ^1.6.0
+  icons_launcher: ^3.0.3
   internet_connection_checker_plus: ^2.9.0
   intl: ^0.20.2
   package_info_plus: ^9.0.0
@@ -36,3 +37,25 @@ flutter:
   assets:
     - assets/
     - assets/icons/
+icons_launcher:
+  image_path: "assets/icons/norm.png"
+  platforms:
+    android:
+      enable: true
+      image_path: "assets/icons/norm.png"
+      notification_image: "assets/icons/norm.png"
+      # adaptive_background_color: '#ffffff'
+      adaptive_background_image: "assets/icons/back.png"
+      adaptive_foreground_image: "assets/icons/fore.png"
+      adaptive_round_image: "assets/icons/round.png"
+      adaptive_monochrome_image: "assets/icons/norm.png"
+    ios:
+      enable: true
+      image_path: "assets/icons/norm.png"
+      # For iOS 18+ (support dark and tinted)
+      dark_path: "assets/icons/norm.png"
+      tinted_path: "assets/icons/norm.png"
+    web:
+      enable: true
+      image_path: "assets/icons/norm.png"
+      favicon_path: "assets/icons/norm.png"
