@@ -23,8 +23,8 @@ class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
   };
   SheduleBloc({required this.repository}) : super(SheduleInitial()) {
     on<SheduleLoadEvent>(_onLoading);
+    on<SheduleRefreshEvent>(_onRefresh); // Добавляем событие обновления
   }
-
   Future<void> _onLoading(
     SheduleLoadEvent event,
     Emitter<SheduleState> emit,
@@ -32,15 +32,37 @@ class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
     try {
       emit(SheduleLoading());
 
-      // Теперь передаем имя группы напрямую, репозиторий сам найдет ID
+      // Загружаем без принудительного обновления (используем кэш если есть)
       final response = await repository.getShedule(
-        groupName: event.groupName, // Используем имя группы
+        groupName: event.groupName,
         selectedDate: event.selectedDate,
+        forceRefresh: false, // Не обновляем из интернета
       );
 
       emit(SheduleSuccess(shedule: response));
     } catch (e) {
       print('❌ Ошибка в _onLoading: $e');
+      emit(SheduleError(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onRefresh(
+    SheduleRefreshEvent event,
+    Emitter<SheduleState> emit,
+  ) async {
+    try {
+      emit(SheduleLoading());
+
+      // Загружаем с принудительным обновлением из интернета
+      final response = await repository.getShedule(
+        groupName: event.groupName,
+        selectedDate: event.selectedDate,
+        forceRefresh: true, // Принудительно обновляем из интернета
+      );
+
+      emit(SheduleSuccess(shedule: response));
+    } catch (e) {
+      print('❌ Ошибка в _onRefresh: $e');
       emit(SheduleError(errorMessage: e.toString()));
     }
   }

@@ -18,77 +18,80 @@ class SheduleRepositoryImpl implements SheduleRepository {
 
   @override
   Future<List<Shedule>> getShedule({
-    required String groupName,  // Изменено: теперь принимаем имя группы вместо ID
+    required String groupName,
     required DateTime selectedDate,
+    required bool
+    forceRefresh, // Добавляем параметр для принудительного обновления
   }) async {
     final evenWeek = isEvenWeek(selectedDate);
     final parity = evenWeek ? 'even' : 'odd';
-    final List<Shedule> data;
-    
-    // Создаем ключ для кэша: группа + четность недели + дата
-    final cacheKey = '${groupName}_${parity}_${selectedDate.toIso8601String().split('T')[0]}';
-    
-    final isInternet = await getIt<InternetConnection>().hasInternetAccess;
-    final cache = localDataSource.getCache(cacheKey);
-    
+    final currentWeekDay = selectedDate.weekday;
+
+    // Ключ для кэша: группа + четность недели
+    final cacheKey = '${groupName}_$parity';
+
     try {
-      if (isInternet) {
-        // Получаем обычное расписание
+      // 1. Сначала пробуем получить данные из локальной базы
+      List<Shedule>? cachedData = localDataSource.getCache(cacheKey);
+
+      // 2. Проверяем, нужно ли обновлять из интернета
+      final isInternet = await getIt<InternetConnection>().hasInternetAccess;
+
+      if (isInternet && (forceRefresh || cachedData == null)) {
+        // Загружаем из интернета только если:
+        // - есть интернет И (принудительное обновление ИЛИ нет кэша)
         final baseData = await remoteDataSource.getShedule(
-          groupName: groupName,  // Передаем имя группы
+          groupName: groupName,
           selectedDate: selectedDate,
         );
-        
-        // Получаем изменения в расписании
+
         final changedData = await remoteDataSource.getChangedShedule(
-          groupName: groupName,  // Передаем имя группы
+          groupName: groupName,
           selectedDate: selectedDate,
         );
-        
-        // Применяем изменения
-        data = applyChanges(baseData, changedData);
-        
-        // Сохраняем в кэш
+
+        final data = applyChanges(baseData, changedData);
+
+        // Сохраняем в локальную базу
         await localDataSource.saveCache(cacheKey, data);
-      } else if (cache != null) {
-        // Используем кэш, если нет интернета
-        data = cache;
-      } else {
-        throw Exception('Нет доступа к интернету и данные не найдены в кэше');
+
+        // Фильтруем по текущему дню недели
+        final filtered = _filterByDay(data, currentWeekDay);
+        return _sortByTime(filtered);
       }
 
-      // Фильтруем по дню недели выбранной даты
-      final currentWeekDay = selectedDate.weekday;
-      
-      final filtered = data.where((schedule) {
-        return schedule.dayOfWeek == currentWeekDay;
-      }).toList();
-      
-      // Сортируем по времени начала
-      filtered.sort((a, b) {
-        final timeA = parseTime(a.startTime);
-        final timeB = parseTime(b.startTime);
-        return timeA.hour * 60 + timeA.minute - (timeB.hour * 60 + timeB.minute);
-      });
-      
-      return filtered;
-    } catch (e) {
-      // Пробуем получить данные из кэша в случае ошибки
-      final cacheData = localDataSource.getCache(cacheKey);
-      if (cacheData != null) {
-        // Фильтруем кэшированные данные
-        final currentWeekDay = selectedDate.weekday;
-        final filtered = cacheData.where((schedule) {
-          return schedule.dayOfWeek == currentWeekDay;
-        }).toList();
-        
-        if (filtered.isNotEmpty) {
-          return filtered;
-        }
+      // 3. Если есть кэшированные данные, используем их
+      if (cachedData != null) {
+        final filtered = _filterByDay(cachedData, currentWeekDay);
+        return _sortByTime(filtered);
       }
-      
+
+      // 4. Если данных нет вообще
+      throw Exception('Нет данных в кэше и нет подключения к интернету');
+    } catch (e) {
+      // 5. В случае ошибки пробуем получить хотя бы кэш
+      final cachedData = localDataSource.getCache(cacheKey);
+      if (cachedData != null) {
+        final filtered = _filterByDay(cachedData, currentWeekDay);
+        return _sortByTime(filtered);
+      }
+
       throw Exception('Ошибка при загрузке расписания: $e');
     }
+  }
+
+  // Вспомогательные методы для фильтрации и сортировки
+  List<Shedule> _filterByDay(List<Shedule> data, int dayOfWeek) {
+    return data.where((schedule) => schedule.dayOfWeek == dayOfWeek).toList();
+  }
+
+  List<Shedule> _sortByTime(List<Shedule> data) {
+    data.sort((a, b) {
+      final timeA = parseTime(a.startTime);
+      final timeB = parseTime(b.startTime);
+      return timeA.hour * 60 + timeA.minute - (timeB.hour * 60 + timeB.minute);
+    });
+    return data;
   }
 
   List<Shedule> applyChanges(List<Shedule> base, List<Shedule> changed) {
@@ -99,27 +102,18 @@ class SheduleRepositoryImpl implements SheduleRepository {
     for (final change in changed) {
       final index = modifiedList.indexWhere(
         (schedule) =>
-            schedule.startTime == change.startTime && 
+            schedule.startTime == change.startTime &&
             schedule.dayOfWeek == change.dayOfWeek,
       );
 
       if (index != -1) {
-        // Заменяем существующую пару
         modifiedList[index] = change;
       } else {
-        // Добавляем новую пару
         modifiedList.add(change);
       }
     }
 
-    // Сортируем по времени начала
-    modifiedList.sort((a, b) {
-      final timeA = parseTime(a.startTime);
-      final timeB = parseTime(b.startTime);
-      return timeA.hour * 60 + timeA.minute - (timeB.hour * 60 + timeB.minute);
-    });
-    
-    return modifiedList;
+    return _sortByTime(modifiedList);
   }
 
   // Опционально: метод для получения полного расписания без фильтрации по дню
@@ -131,22 +125,22 @@ class SheduleRepositoryImpl implements SheduleRepository {
     final evenWeek = isEvenWeek(selectedDate);
     final parity = evenWeek ? 'even' : 'odd';
     final cacheKey = 'full_${groupName}_$parity';
-    
+
     final isInternet = await getIt<InternetConnection>().hasInternetAccess;
     final cache = localDataSource.getCache(cacheKey);
-    
+
     try {
       if (isInternet) {
         final baseData = await remoteDataSource.getShedule(
           groupName: groupName,
           selectedDate: selectedDate,
         );
-        
+
         final changedData = await remoteDataSource.getChangedShedule(
           groupName: groupName,
           selectedDate: selectedDate,
         );
-        
+
         final data = applyChanges(baseData, changedData);
         await localDataSource.saveCache(cacheKey, data);
         return data;

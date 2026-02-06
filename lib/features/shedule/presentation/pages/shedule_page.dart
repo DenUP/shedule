@@ -111,6 +111,7 @@ class _ShedulePageState extends State<ShedulePage> {
         setState(() {
           _selectedGroup = savedGroup;
         });
+        // Загружаем из кэша при старте
         context.read<SheduleBloc>().add(
           SheduleLoadEvent(groupName: savedGroup, selectedDate: _selectedDate),
         );
@@ -248,7 +249,8 @@ class _ShedulePageState extends State<ShedulePage> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            getEvenWeekString,
+            // Используем _selectedDate вместо текущей даты
+            isEvenWeek(_selectedDate) ? 'Четная неделя' : 'Нечетная неделя',
             style: GoogleFonts.lato(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -361,7 +363,7 @@ class _ShedulePageState extends State<ShedulePage> {
       right: 16,
       child: Container(
         height: height - 4,
-        decoration: BoxDecoration( 
+        decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
@@ -808,8 +810,9 @@ class _ShedulePageState extends State<ShedulePage> {
               ? FloatingActionButton(
                   onPressed: () {
                     if (_selectedGroup != null) {
+                      // Используем RefreshEvent для принудительного обновления
                       context.read<SheduleBloc>().add(
-                        SheduleLoadEvent(
+                        SheduleRefreshEvent(
                           groupName: _selectedGroup!,
                           selectedDate: _selectedDate,
                         ),

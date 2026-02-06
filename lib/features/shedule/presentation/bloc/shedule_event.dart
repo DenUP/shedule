@@ -16,3 +16,17 @@ final class SheduleLoadEvent extends SheduleEvent {
   @override
   List<Object> get props => [groupName, selectedDate];
 }
+
+// Новое событие для принудительного обновления
+final class SheduleRefreshEvent extends SheduleEvent {
+  final String groupName;
+  final DateTime selectedDate;
+
+  const SheduleRefreshEvent({
+    required this.groupName,
+    required this.selectedDate,
+  });
+
+  @override
+  List<Object> get props => [groupName, selectedDate];
+}
