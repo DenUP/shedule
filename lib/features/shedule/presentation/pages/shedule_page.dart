@@ -240,25 +240,32 @@ class _ShedulePageState extends State<ShedulePage> {
         ),
       ),
       centerTitle: true,
-      actions: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          margin: const EdgeInsets.only(right: 16),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            // Используем _selectedDate вместо текущей даты
-            isEvenWeek(_selectedDate) ? 'Четная неделя' : 'Нечетная неделя',
-            style: GoogleFonts.lato(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-      ],
+      actions: _selectedGroup != null
+          ? [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                margin: const EdgeInsets.only(right: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  // Используем _selectedDate вместо текущей даты
+                  isEvenWeek(_selectedDate)
+                      ? 'Четная неделя'
+                      : 'Нечетная неделя',
+                  style: GoogleFonts.lato(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ]
+          : null,
     );
   }
 
