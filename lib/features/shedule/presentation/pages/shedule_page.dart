@@ -7,6 +7,7 @@ import 'package:shedule_test/core/network/updatechecker.dart';
 import 'package:shedule_test/core/utils/time_utils.dart';
 import 'package:shedule_test/dependecy_injection.dart';
 import 'package:shedule_test/features/shedule/domain/dataSource/shedule_local_data_source.dart';
+import 'package:shedule_test/features/shedule/domain/repositories/groups_repository.dart';
 import 'package:shedule_test/features/shedule/presentation/bloc/shedule_bloc.dart';
 
 // Импортируем модель Shedule
@@ -104,6 +105,9 @@ class _ShedulePageState extends State<ShedulePage> {
     _datePickerController = DatePickerController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Предварительно загружаем группы
+      await getIt<GroupsRepository>().preloadGroups();
+
       final savedGroup = getIt<SheduleLocalDataSource>().getSelectedGroup();
       if (savedGroup == null) {
         await _showGroupPicker();
@@ -111,7 +115,6 @@ class _ShedulePageState extends State<ShedulePage> {
         setState(() {
           _selectedGroup = savedGroup;
         });
-        // Загружаем из кэша при старте
         context.read<SheduleBloc>().add(
           SheduleLoadEvent(groupName: savedGroup, selectedDate: _selectedDate),
         );
