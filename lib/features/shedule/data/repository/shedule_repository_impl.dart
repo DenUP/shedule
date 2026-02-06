@@ -1,4 +1,3 @@
-// lib/features/shedule/data/repository/shedule_repository_impl.dart
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shedule_test/core/utils/time_utils.dart';
 import 'package:shedule_test/dependecy_injection.dart';
@@ -20,15 +19,15 @@ class SheduleRepositoryImpl implements SheduleRepository {
   Future<List<Shedule>> getShedule({
     required String groupName,
     required DateTime selectedDate,
-    required bool
-    forceRefresh, // Добавляем параметр для принудительного обновления
+    required bool forceRefresh,
   }) async {
     final evenWeek = isEvenWeek(selectedDate);
     final parity = evenWeek ? 'even' : 'odd';
     final currentWeekDay = selectedDate.weekday;
 
-    // Ключ для кэша: группа + четность недели
-    final cacheKey = '${groupName}_$parity';
+    // Ключ для кэша: группа + дата
+    final cacheKey =
+        '${groupName}_${selectedDate.toIso8601String().substring(0, 10)}';
 
     try {
       // 1. Сначала пробуем получить данные из локальной базы
@@ -38,32 +37,40 @@ class SheduleRepositoryImpl implements SheduleRepository {
       final isInternet = await getIt<InternetConnection>().hasInternetAccess;
 
       if (isInternet && (forceRefresh || cachedData == null)) {
-        // Загружаем из интернета только если:
-        // - есть интернет И (принудительное обновление ИЛИ нет кэша)
-        final baseData = await remoteDataSource.getShedule(
-          groupName: groupName,
-          selectedDate: selectedDate,
-        );
-
+        // Получаем измененное расписание
         final changedData = await remoteDataSource.getChangedShedule(
           groupName: groupName,
           selectedDate: selectedDate,
         );
 
-        final data = applyChanges(baseData, changedData);
+        // Если есть измененное расписание, используем только его
+        if (changedData.isNotEmpty) {
+          // Сохраняем в локальную базу
+          await localDataSource.saveCache(cacheKey, changedData);
+
+          // Фильтруем по текущему дню недели (хотя changedData уже должна содержать только на эту дату)
+          final filtered = _filterByDay(changedData, currentWeekDay);
+          return _sortByTime(filtered);
+        }
+
+        // Если измененного расписания нет, берем основное
+        final baseData = await remoteDataSource.getShedule(
+          groupName: groupName,
+          selectedDate: selectedDate,
+        );
+
+        // Фильтруем основное расписание по текущему дню недели
+        final filteredBaseData = _filterByDay(baseData, currentWeekDay);
 
         // Сохраняем в локальную базу
-        await localDataSource.saveCache(cacheKey, data);
+        await localDataSource.saveCache(cacheKey, filteredBaseData);
 
-        // Фильтруем по текущему дню недели
-        final filtered = _filterByDay(data, currentWeekDay);
-        return _sortByTime(filtered);
+        return _sortByTime(filteredBaseData);
       }
 
       // 3. Если есть кэшированные данные, используем их
       if (cachedData != null) {
-        final filtered = _filterByDay(cachedData, currentWeekDay);
-        return _sortByTime(filtered);
+        return _sortByTime(cachedData);
       }
 
       // 4. Если данных нет вообще
@@ -72,8 +79,7 @@ class SheduleRepositoryImpl implements SheduleRepository {
       // 5. В случае ошибки пробуем получить хотя бы кэш
       final cachedData = localDataSource.getCache(cacheKey);
       if (cachedData != null) {
-        final filtered = _filterByDay(cachedData, currentWeekDay);
-        return _sortByTime(filtered);
+        return _sortByTime(cachedData);
       }
 
       throw Exception('Ошибка при загрузке расписания: $e');
@@ -94,29 +100,7 @@ class SheduleRepositoryImpl implements SheduleRepository {
     return data;
   }
 
-  List<Shedule> applyChanges(List<Shedule> base, List<Shedule> changed) {
-    if (changed.isEmpty) return base;
-
-    final modifiedList = List<Shedule>.from(base);
-
-    for (final change in changed) {
-      final index = modifiedList.indexWhere(
-        (schedule) =>
-            schedule.startTime == change.startTime &&
-            schedule.dayOfWeek == change.dayOfWeek,
-      );
-
-      if (index != -1) {
-        modifiedList[index] = change;
-      } else {
-        modifiedList.add(change);
-      }
-    }
-
-    return _sortByTime(modifiedList);
-  }
-
-  // Опционально: метод для получения полного расписания без фильтрации по дню
+  // Метод для получения полного расписания на неделю
   @override
   Future<List<Shedule>> getFullShedule({
     required String groupName,
@@ -124,26 +108,59 @@ class SheduleRepositoryImpl implements SheduleRepository {
   }) async {
     final evenWeek = isEvenWeek(selectedDate);
     final parity = evenWeek ? 'even' : 'odd';
-    final cacheKey = 'full_${groupName}_$parity';
+
+    // Ключ для кэша полного расписания: группа + четность недели + дата начала недели
+    final startOfWeek = selectedDate.subtract(
+      Duration(days: selectedDate.weekday - 1),
+    );
+    final cacheKey =
+        'full_${groupName}_${parity}_${startOfWeek.toIso8601String().substring(0, 10)}';
 
     final isInternet = await getIt<InternetConnection>().hasInternetAccess;
     final cache = localDataSource.getCache(cacheKey);
 
     try {
       if (isInternet) {
+        // Получаем основное расписание на неделю
         final baseData = await remoteDataSource.getShedule(
           groupName: groupName,
           selectedDate: selectedDate,
         );
 
-        final changedData = await remoteDataSource.getChangedShedule(
-          groupName: groupName,
-          selectedDate: selectedDate,
-        );
+        // Создаем карту изменений по дням недели
+        final Map<int, List<Shedule>> changedDataByDay = {};
 
-        final data = applyChanges(baseData, changedData);
-        await localDataSource.saveCache(cacheKey, data);
-        return data;
+        // Для каждого дня недели проверяем есть ли изменения
+        for (int day = 1; day <= 7; day++) {
+          final dateForDay = startOfWeek.add(Duration(days: day - 1));
+          final changedData = await remoteDataSource.getChangedShedule(
+            groupName: groupName,
+            selectedDate: dateForDay,
+          );
+
+          if (changedData.isNotEmpty) {
+            changedDataByDay[day] = changedData;
+          }
+        }
+
+        // Объединяем расписание
+        final List<Shedule> result = [];
+
+        for (final schedule in baseData) {
+          // Если для этого дня есть изменения, пропускаем основное расписание
+          if (!changedDataByDay.containsKey(schedule.dayOfWeek)) {
+            result.add(schedule);
+          }
+        }
+
+        // Добавляем все изменения
+        for (final changedList in changedDataByDay.values) {
+          result.addAll(changedList);
+        }
+
+        final sortedResult = _sortByTime(result);
+        await localDataSource.saveCache(cacheKey, sortedResult);
+        return sortedResult;
       } else if (cache != null) {
         return cache;
       } else {
