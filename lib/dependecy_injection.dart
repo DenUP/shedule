@@ -4,9 +4,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shedule_test/features/shedule/data/dataSource/group_remote_data_source_impl.dart';
 import 'package:shedule_test/features/shedule/data/dataSource/shedule_local_data_source_impl.dart';
 import 'package:shedule_test/features/shedule/data/dataSource/shedule_remote_data_source_impl.dart';
+import 'package:shedule_test/features/shedule/data/repository/groups_repository_impl.dart';
 import 'package:shedule_test/features/shedule/data/repository/shedule_repository_impl.dart';
 import 'package:shedule_test/features/shedule/domain/dataSource/shedule_local_data_source.dart';
 import 'package:shedule_test/features/shedule/domain/dataSource/shedule_remote_data_source.dart';
+import 'package:shedule_test/features/shedule/domain/repositories/groups_repository.dart';
 import 'package:shedule_test/features/shedule/domain/repositories/shedule_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -29,15 +31,23 @@ Future<void> init() async {
   getIt.registerSingleton<GroupRemoteDataSource>(
     GroupRemoteDataSource(client: getIt<SupabaseClient>()),
   );
+  getIt.registerLazySingleton<SheduleLocalDataSource>(
+    () => SheduleLocalDataSourceImpl(sharedPreferences: getIt()),
+  );
+  getIt.registerSingleton<GroupsRepository>(
+    GroupsRepositoryImpl(
+      remoteDataSource: getIt<GroupRemoteDataSource>(),
+      localDataSource: getIt<SheduleLocalDataSource>(),
+    ),
+  );
   getIt.registerSingleton<SheduleRemoteDataSource>(
     SheduleRemoteDataSourceImpl(
       client: getIt<SupabaseClient>(),
       groupDataSource: getIt<GroupRemoteDataSource>(),
+      groupsRepository: getIt<GroupsRepository>(), // Используем репозиторий
     ),
   );
-  getIt.registerLazySingleton<SheduleLocalDataSource>(
-    () => SheduleLocalDataSourceImpl(sharedPreferences: getIt()),
-  );
+
   getIt.registerLazySingleton<SheduleRepository>(
     () => SheduleRepositoryImpl(
       remoteDataSource: getIt(),
