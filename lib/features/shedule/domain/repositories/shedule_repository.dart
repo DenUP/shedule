@@ -12,4 +12,9 @@ abstract class SheduleRepository {
     required String groupName,
     required DateTime selectedDate,
   });
+
+  Future<List<Shedule>?> getCachedShedule({
+    required String groupName,
+    required DateTime selectedDate,
+  });
 }

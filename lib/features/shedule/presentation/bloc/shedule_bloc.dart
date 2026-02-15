@@ -30,19 +30,39 @@ class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
     SheduleLoadEvent event,
     Emitter<SheduleState> emit,
   ) async {
-    try {
-      emit(SheduleLoading());
+    // Пробуем показать кэш мгновенно
+    final cached = await repository.getCachedShedule(
+      groupName: event.groupName,
+      selectedDate: event.selectedDate,
+    );
+    if (cached != null) {
+      emit(SheduleSuccess(shedule: cached));
+      // Запускаем фоновую проверку обновлений
+      add(
+        SheduleBackgroundRefreshEvent(
+          groupName: event.groupName,
+          selectedDate: event.selectedDate,
+        ),
+      );
+      return;
+    }
 
-      // Загружаем без принудительного обновления (используем кэш если есть)
+    // Кэша нет – показываем загрузку и грузим из сети/кэша
+    emit(SheduleLoading());
+    try {
       final response = await repository.getShedule(
         groupName: event.groupName,
         selectedDate: event.selectedDate,
-        forceRefresh: false, // Не обновляем из интернета
+        forceRefresh: false,
       );
-
       emit(SheduleSuccess(shedule: response));
+      add(
+        SheduleBackgroundRefreshEvent(
+          groupName: event.groupName,
+          selectedDate: event.selectedDate,
+        ),
+      );
     } catch (e) {
-      print('❌ Ошибка в _onLoading: $e');
       emit(SheduleError(errorMessage: e.toString()));
     }
   }

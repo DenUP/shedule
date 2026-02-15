@@ -7,6 +7,7 @@ import 'package:shedule_test/features/shedule/domain/entity/shedule.dart';
 
 class SheduleLocalDataSourceImpl implements SheduleLocalDataSource {
   final SharedPreferences sharedPreferences;
+  final Map<String, List<Shedule>> _memoryCache = {};
 
   SheduleLocalDataSourceImpl({required this.sharedPreferences});
 
@@ -75,14 +76,20 @@ class SheduleLocalDataSourceImpl implements SheduleLocalDataSource {
   // Существующие методы для расписания
   @override
   List<Shedule>? getCache(String parity) {
+    // Сначала проверяем память
+    if (_memoryCache.containsKey(parity)) {
+      return _memoryCache[parity];
+    }
     final data = sharedPreferences.getStringList("${_keyLocal}_$parity");
-    if (data == null || data.isEmpty) return null;
-    final response = data.map((e) => Shedule.fromJson(json.decode(e))).toList();
-    return response;
+    if (data == null) return null;
+    final result = data.map((e) => Shedule.fromJson(json.decode(e))).toList();
+    _memoryCache[parity] = result;
+    return result;
   }
 
   @override
   Future<bool> saveCache(String parity, List<Shedule> shedule) async {
+    _memoryCache[parity] = shedule;
     final data = shedule.map((e) => json.encode(e.toJson())).toList();
     final shared = await sharedPreferences.setStringList(
       "${_keyLocal}_$parity",

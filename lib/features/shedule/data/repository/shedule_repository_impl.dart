@@ -171,4 +171,15 @@ class SheduleRepositoryImpl implements SheduleRepository {
       throw Exception('Ошибка при загрузке полного расписания: $e');
     }
   }
+
+  @override
+  Future<List<Shedule>?> getCachedShedule({
+    required String groupName,
+    required DateTime selectedDate,
+  }) async {
+    final cacheKey =
+        '${groupName}_${selectedDate.toIso8601String().substring(0, 10)}';
+    final cachedData = localDataSource.getCache(cacheKey);
+    return cachedData != null ? _sortByTime(cachedData) : null;
+  }
 }
