@@ -24,6 +24,7 @@ class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
   SheduleBloc({required this.repository}) : super(SheduleInitial()) {
     on<SheduleLoadEvent>(_onLoading);
     on<SheduleRefreshEvent>(_onRefresh); // Добавляем событие обновления
+    on<SheduleBackgroundRefreshEvent>(_onBackgroundRefresh);
   }
   Future<void> _onLoading(
     SheduleLoadEvent event,
@@ -64,6 +65,40 @@ class SheduleBloc extends Bloc<SheduleEvent, SheduleState> {
     } catch (e) {
       print('❌ Ошибка в _onRefresh: $e');
       emit(SheduleError(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onBackgroundRefresh(
+    SheduleBackgroundRefreshEvent event,
+    Emitter<SheduleState> emit,
+  ) async {
+    try {
+      // Загружаем свежие данные с forceRefresh: true
+      final freshData = await repository.getShedule(
+        groupName: event.groupName,
+        selectedDate: event.selectedDate,
+        forceRefresh: true,
+      );
+
+      // Получаем текущее состояние, чтобы сравнить данные
+      final currentState = state;
+      if (currentState is SheduleSuccess) {
+        // Если данные отличаются (например, по содержимому), обновляем состояние
+        // Для простоты сравниваем списки по json-представлению (можно улучшить)
+        final currentJson = currentState.shedule
+            .map((e) => e.toJson())
+            .toList();
+        final freshJson = freshData.map((e) => e.toJson()).toList();
+        if (currentJson.toString() != freshJson.toString()) {
+          emit(SheduleSuccess(shedule: freshData));
+        }
+      } else {
+        // Если текущее состояние не Success (например, Initial или Loading),
+        // просто ничего не делаем — фоновая проверка не должна перебивать.
+      }
+    } catch (e) {
+      // Ошибки (например, нет интернета) игнорируем — пользователь продолжает видеть кэш
+      print('Background refresh error: $e');
     }
   }
 }

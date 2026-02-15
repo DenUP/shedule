@@ -30,3 +30,16 @@ final class SheduleRefreshEvent extends SheduleEvent {
   @override
   List<Object> get props => [groupName, selectedDate];
 }
+
+class SheduleBackgroundRefreshEvent extends SheduleEvent {
+  final String groupName;
+  final DateTime selectedDate;
+
+  const SheduleBackgroundRefreshEvent({
+    required this.groupName,
+    required this.selectedDate,
+  });
+
+  @override
+  List<Object> get props => [groupName, selectedDate];
+}

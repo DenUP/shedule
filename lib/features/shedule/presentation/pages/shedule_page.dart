@@ -115,9 +115,12 @@ class _ShedulePageState extends State<ShedulePage> {
         setState(() {
           _selectedGroup = savedGroup;
         });
+        // Загружаем кэш
         context.read<SheduleBloc>().add(
           SheduleLoadEvent(groupName: savedGroup, selectedDate: _selectedDate),
         );
+        // Планируем фоновое обновление
+        _scheduleBackgroundRefresh();
       }
       UpdateChecker.showUpdateDialog(context);
     });
@@ -127,6 +130,20 @@ class _ShedulePageState extends State<ShedulePage> {
   void dispose() {
     _datePickerController;
     super.dispose();
+  }
+
+  void _scheduleBackgroundRefresh() {
+    if (_selectedGroup == null) return;
+    Future.microtask(() {
+      if (mounted) {
+        context.read<SheduleBloc>().add(
+          SheduleBackgroundRefreshEvent(
+            groupName: _selectedGroup!,
+            selectedDate: _selectedDate,
+          ),
+        );
+      }
+    });
   }
 
   Widget _buildDateBar() {
@@ -182,6 +199,7 @@ class _ShedulePageState extends State<ShedulePage> {
             context.read<SheduleBloc>().add(
               SheduleLoadEvent(groupName: _selectedGroup!, selectedDate: date),
             );
+            _scheduleBackgroundRefresh();
           }
         },
       ),
@@ -990,25 +1008,24 @@ class _ShedulePageState extends State<ShedulePage> {
                               final selectedGroup = _tempSelectedGroup!;
                               await getIt<SheduleLocalDataSource>()
                                   .saveSelectedGroup(selectedGroup);
-
-                              // Обновляем состояние
                               if (mounted) {
                                 setState(() {
                                   _selectedGroup = selectedGroup;
                                   _isSelectingGroup = false;
                                 });
                               }
-
                               if (!context.mounted) return;
                               Navigator.pop(context);
 
-                              // Загружаем расписание для выбранной группы и текущей даты
+                              // Загружаем кэш
                               context.read<SheduleBloc>().add(
                                 SheduleLoadEvent(
                                   groupName: selectedGroup,
                                   selectedDate: _selectedDate,
                                 ),
                               );
+                              // Фоновое обновление
+                              _scheduleBackgroundRefresh();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
